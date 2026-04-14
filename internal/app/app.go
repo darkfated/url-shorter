@@ -17,6 +17,9 @@ import (
 
 func Run() error {
 	cfg := config.Load()
+	if err := cfg.Validate(); err != nil {
+		return err
+	}
 
 	store, err := newStore(cfg)
 	if err != nil {

@@ -71,6 +71,27 @@ func TestCreateAndRedirect(t *testing.T) {
 	}
 }
 
+func TestHealthz(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	store := memory.New()
+	svc := service.New(store)
+	h := New(svc, "https://urls.yandex.ru")
+
+	server := httptest.NewServer(h.Routes())
+	t.Cleanup(server.Close)
+
+	resp, err := http.Get(server.URL + "/healthz")
+	if err != nil {
+		t.Fatalf("GET request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+}
+
 func TestCreateShortLinkInvalidJSON(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -98,6 +119,74 @@ func TestCreateShortLinkInvalidJSON(t *testing.T) {
 		t.Fatalf("decode response: %v", err)
 	}
 	if body.Error != "неверный json" {
+		t.Fatalf("unexpected error message %q", body.Error)
+	}
+}
+
+func TestCreateShortLinkEmptyURL(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	store := memory.New()
+	svc := service.New(store)
+	h := New(svc, "https://urls.yandex.ru")
+
+	server := httptest.NewServer(h.Routes())
+	t.Cleanup(server.Close)
+
+	resp, err := http.Post(server.URL+"/api/shorten", "application/json", strings.NewReader(`{"url":""}`))
+	if err != nil {
+		t.Fatalf("POST request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var body struct {
+		Error string `json:"error"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if body.Error != "ссылка некорректная" {
+		t.Fatalf("unexpected error message %q", body.Error)
+	}
+}
+
+func TestResolveShortLinkNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	store := memory.New()
+	svc := service.New(store)
+	h := New(svc, "https://urls.yandex.ru")
+
+	server := httptest.NewServer(h.Routes())
+	t.Cleanup(server.Close)
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	resp, err := client.Get(server.URL + "/not-found")
+	if err != nil {
+		t.Fatalf("GET request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var body struct {
+		Error string `json:"error"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if body.Error != "не найдено" {
 		t.Fatalf("unexpected error message %q", body.Error)
 	}
 }

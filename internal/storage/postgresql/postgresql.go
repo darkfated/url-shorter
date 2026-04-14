@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/lib/pq"
 	_ "github.com/lib/pq"
@@ -25,10 +24,6 @@ func (s *Store) Close() error {
 }
 
 func New(dsn string) (*Store, error) {
-	if dsn == "" {
-		return nil, fmt.Errorf("dsn для postgres не настроен")
-	}
-
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err

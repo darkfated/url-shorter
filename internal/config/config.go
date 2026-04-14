@@ -1,7 +1,9 @@
 package config
 
 import (
+	"errors"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -30,6 +32,19 @@ func Load() Config {
 		PostgreSQLDSN: os.Getenv("POSTGRES_DSN"),
 	}
 	return cfg
+}
+
+func (c Config) Validate() error {
+	if strings.TrimSpace(c.HTTPAddr) == "" {
+		return errors.New("адрес сервера не задан")
+	}
+	if strings.TrimSpace(c.PublicBaseURL) == "" {
+		return errors.New("публичный адрес не задан")
+	}
+	if c.StorageType == StoragePostgreSQL && strings.TrimSpace(c.PostgreSQLDSN) == "" {
+		return errors.New("dsn для postgres не задан")
+	}
+	return nil
 }
 
 func envOrDefault(key, fallback string) string {
