@@ -114,10 +114,10 @@ func validateURL(raw string) error {
 
 func generateShortCode() string {
 	code := make([]byte, shortCodeLength)
-	max := big.NewInt(int64(len(shortCodeAlphabet)))
+	maxLen := big.NewInt(int64(len(shortCodeAlphabet)))
 
 	for i := range code {
-		n, err := rand.Int(rand.Reader, max)
+		n, err := rand.Int(rand.Reader, maxLen)
 		if err != nil {
 			panic(err)
 		}
