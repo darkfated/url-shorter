@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
+	"math/big"
 	"net/url"
 	"strings"
 
@@ -112,14 +113,16 @@ func validateURL(raw string) error {
 }
 
 func generateShortCode() string {
-	b := make([]byte, shortCodeLength)
-	if _, err := rand.Read(b); err != nil {
-		panic(err)
+	code := make([]byte, shortCodeLength)
+	max := big.NewInt(int64(len(shortCodeAlphabet)))
+
+	for i := range code {
+		n, err := rand.Int(rand.Reader, max)
+		if err != nil {
+			panic(err)
+		}
+		code[i] = shortCodeAlphabet[n.Int64()]
 	}
 
-	for i := range b {
-		b[i] = shortCodeAlphabet[int(b[i])%len(shortCodeAlphabet)]
-	}
-
-	return string(b)
+	return string(code)
 }
