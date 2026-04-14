@@ -15,6 +15,15 @@ const (
 	StoragePostgreSQL StorageType = "postgres"
 )
 
+func (t StorageType) IsValid() bool {
+	switch t {
+	case StorageMemory, StoragePostgreSQL:
+		return true
+	default:
+		return false
+	}
+}
+
 type Config struct {
 	HTTPAddr      string
 	PublicBaseURL string
@@ -40,6 +49,9 @@ func (c Config) Validate() error {
 	}
 	if strings.TrimSpace(c.PublicBaseURL) == "" {
 		return errors.New("публичный адрес не задан")
+	}
+	if !c.StorageType.IsValid() {
+		return errors.New("неизвестный тип хранилища")
 	}
 	if c.StorageType == StoragePostgreSQL && strings.TrimSpace(c.PostgreSQLDSN) == "" {
 		return errors.New("dsn для postgres не задан")

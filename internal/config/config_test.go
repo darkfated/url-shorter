@@ -38,3 +38,15 @@ func TestValidatePostgresConfigWithoutDSN(t *testing.T) {
 		t.Fatalf("expected error")
 	}
 }
+
+func TestValidateUnknownStorageType(t *testing.T) {
+	cfg := Config{
+		HTTPAddr:      ":8080",
+		PublicBaseURL: "http://localhost:8080",
+		StorageType:   StorageType("unknown"),
+	}
+
+	if err := cfg.Validate(); err == nil {
+		t.Fatalf("expected error")
+	}
+}
