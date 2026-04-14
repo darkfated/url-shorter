@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: url-shorter-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: url_shorter
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d url_shorter"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - url_shorter_pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: url-shorter-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      HTTP_ADDR: :8080
+      PUBLIC_BASE_URL: http://localhost:8080
+      STORAGE_TYPE: postgres
+      POSTGRES_DSN: postgres://postgres:password@db:5432/url_shorter?sslmode=disable
+    ports:
+      - "8080:8080"
+
+volumes:
+  url_shorter_pgdata:

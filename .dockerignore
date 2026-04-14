@@ -1,0 +1,11 @@
+.idea
+.vscode
+
+.env
+.env.example
+
+.gocache
+.gotmp
+
+.git
+README.md
