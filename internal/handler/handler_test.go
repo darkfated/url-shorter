@@ -13,7 +13,7 @@ import (
 	"url-shorter/internal/storage/memory"
 )
 
-func TestCreateAndResolve(t *testing.T) {
+func TestCreateAndRedirect(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	store := memory.New()
@@ -46,21 +46,23 @@ func TestCreateAndResolve(t *testing.T) {
 		t.Fatalf("unexpected short code %q", created.ShortCode)
 	}
 
-	getResp, err := http.Get(server.URL + "/" + created.ShortCode)
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	getResp, err := client.Get(server.URL + "/" + created.ShortCode)
 	if err != nil {
 		t.Fatalf("GET request failed: %v", err)
 	}
 	defer getResp.Body.Close()
 
-	if getResp.StatusCode != http.StatusOK {
+	if getResp.StatusCode != http.StatusFound {
 		t.Fatalf("unexpected GET status: %d", getResp.StatusCode)
 	}
 
-	var resolved bytes.Buffer
-	if _, err := resolved.ReadFrom(getResp.Body); err != nil {
-		t.Fatalf("read body: %v", err)
-	}
-	if resolved.String() != "https://yandex.ru" {
-		t.Fatalf("unexpected body %q", resolved.String())
+	if location := getResp.Header.Get("Location"); location != "https://yandex.ru" {
+		t.Fatalf("unexpected redirect location %q", location)
 	}
 }

@@ -70,7 +70,7 @@ func (h *Handler) resolveShortLink(c *gin.Context) {
 		return
 	}
 
-	c.String(http.StatusOK, link.OriginalURL)
+	c.Redirect(http.StatusFound, link.OriginalURL)
 }
 
 func (h *Handler) respondError(c *gin.Context, err error) {
