@@ -11,6 +11,7 @@ import (
 )
 
 const shortCodeLength = 10
+const shortCodeAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
 
 var (
 	ErrNotFound             = errors.New("ссылка не найдена")
@@ -111,15 +112,13 @@ func validateURL(raw string) error {
 }
 
 func generateShortCode() string {
-	const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
-
 	b := make([]byte, shortCodeLength)
 	if _, err := rand.Read(b); err != nil {
 		panic(err)
 	}
 
 	for i := range b {
-		b[i] = alphabet[int(b[i])%len(alphabet)]
+		b[i] = shortCodeAlphabet[int(b[i])%len(shortCodeAlphabet)]
 	}
 
 	return string(b)
