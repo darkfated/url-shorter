@@ -222,3 +222,35 @@ func TestResolveShortLinkNotFound(t *testing.T) {
 		t.Fatalf("unexpected error message %q", body.Error)
 	}
 }
+
+func TestResolveShortLinkTooLongCode(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	store := memory.New()
+	svc := service.New(store)
+	h := New(svc, "https://urls.yandex.ru")
+
+	server := httptest.NewServer(h.Routes())
+	t.Cleanup(server.Close)
+
+	longCode := strings.Repeat("a", service.ShortCodeLength+1)
+	resp, err := http.Get(server.URL + "/" + longCode)
+	if err != nil {
+		t.Fatalf("GET request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var body struct {
+		Error string `json:"error"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if body.Error != "код слишком длинный" {
+		t.Fatalf("unexpected error message %q", body.Error)
+	}
+}

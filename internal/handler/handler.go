@@ -69,6 +69,10 @@ func (h *Handler) createShortLink(c *gin.Context) {
 
 func (h *Handler) resolveShortLink(c *gin.Context) {
 	code := strings.TrimSpace(c.Param("code"))
+	if len(code) > service.ShortCodeLength {
+		h.writeError(c, http.StatusNotFound, "код слишком длинный")
+		return
+	}
 	link, err := h.svc.Resolve(c.Request.Context(), code)
 	if err != nil {
 		h.respondServiceError(c, err)

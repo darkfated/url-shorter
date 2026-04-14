@@ -11,7 +11,7 @@ import (
 	"url-shorter/internal/domain"
 )
 
-const shortCodeLength = 10
+const ShortCodeLength = 10
 const shortCodeAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
 const maxOriginalURLLength = 260
 
@@ -119,7 +119,7 @@ func validateURL(raw string) error {
 }
 
 func generateShortCode() string {
-	code := make([]byte, shortCodeLength)
+	code := make([]byte, ShortCodeLength)
 	maxLen := big.NewInt(int64(len(shortCodeAlphabet)))
 
 	for i := range code {
