@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -67,5 +68,36 @@ func TestCreateAndRedirect(t *testing.T) {
 
 	if location := getResp.Header.Get("Location"); location != "https://yandex.ru" {
 		t.Fatalf("unexpected redirect location %q", location)
+	}
+}
+
+func TestCreateShortLinkInvalidJSON(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	store := memory.New()
+	svc := service.New(store)
+	h := New(svc, "https://urls.yandex.ru")
+
+	server := httptest.NewServer(h.Routes())
+	t.Cleanup(server.Close)
+
+	resp, err := http.Post(server.URL+"/api/shorten", "application/json", strings.NewReader("{"))
+	if err != nil {
+		t.Fatalf("POST request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var body struct {
+		Error string `json:"error"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if body.Error != "неверный json" {
+		t.Fatalf("unexpected error message %q", body.Error)
 	}
 }

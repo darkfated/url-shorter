@@ -43,16 +43,20 @@ type createShortLinkResponse struct {
 	ShortCode   string `json:"short_code"`
 }
 
+type errorResponse struct {
+	Error string `json:"error"`
+}
+
 func (h *Handler) createShortLink(c *gin.Context) {
 	var req createShortLinkRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "неверный json"})
+		h.writeError(c, http.StatusBadRequest, "неверный json")
 		return
 	}
 
 	link, err := h.svc.Create(c.Request.Context(), req.URL)
 	if err != nil {
-		h.respondError(c, err)
+		h.respondServiceError(c, err)
 		return
 	}
 
@@ -67,22 +71,26 @@ func (h *Handler) resolveShortLink(c *gin.Context) {
 	code := strings.TrimSpace(c.Param("code"))
 	link, err := h.svc.Resolve(c.Request.Context(), code)
 	if err != nil {
-		h.respondError(c, err)
+		h.respondServiceError(c, err)
 		return
 	}
 
 	c.Redirect(http.StatusFound, link.OriginalURL)
 }
 
-func (h *Handler) respondError(c *gin.Context, err error) {
+func (h *Handler) respondServiceError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, service.ErrInvalidURL):
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ссылка некорректная"})
+		h.writeError(c, http.StatusBadRequest, "ссылка некорректная")
 	case errors.Is(err, service.ErrNotFound):
-		c.JSON(http.StatusNotFound, gin.H{"error": "не найдено"})
+		h.writeError(c, http.StatusNotFound, "не найдено")
 	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "внутренняя ошибка"})
+		h.writeError(c, http.StatusInternalServerError, "внутренняя ошибка")
 	}
+}
+
+func (h *Handler) writeError(c *gin.Context, status int, message string) {
+	c.JSON(status, errorResponse{Error: message})
 }
 
 func shortURL(baseURL, code string) string {
