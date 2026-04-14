@@ -1,8 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"url-shorter/internal/config"
 	"url-shorter/internal/handler"
@@ -28,11 +32,39 @@ func Run() error {
 	h := handler.New(svc, cfg.PublicBaseURL)
 
 	server := &http.Server{
-		Addr:    cfg.HTTPAddr,
-		Handler: h.Routes(),
+		Addr:              cfg.HTTPAddr,
+		Handler:           h.Routes(),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
-	return server.ListenAndServe()
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- server.ListenAndServe()
+	}()
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	select {
+	case err := <-errCh:
+		if err != nil && err != http.ErrServerClosed {
+			return err
+		}
+		return nil
+	case <-ctx.Done():
+		if err := server.Shutdown(context.Background()); err != nil {
+			return err
+		}
+	}
+
+	err = <-errCh
+	if err != nil && err != http.ErrServerClosed {
+		return err
+	}
+	return nil
 }
 
 func newStore(cfg config.Config) (service.Store, error) {
