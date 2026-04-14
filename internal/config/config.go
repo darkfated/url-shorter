@@ -15,6 +15,7 @@ const (
 
 type Config struct {
 	HTTPAddr      string
+	PublicBaseURL string
 	StorageType   StorageType
 	PostgreSQLDSN string
 }
@@ -24,6 +25,7 @@ func Load() Config {
 
 	cfg := Config{
 		HTTPAddr:      envOrDefault("HTTP_ADDR", ":8080"),
+		PublicBaseURL: envOrDefault("PUBLIC_BASE_URL", "http://localhost:8080"),
 		StorageType:   StorageType(envOrDefault("STORAGE_TYPE", "memory")),
 		PostgreSQLDSN: os.Getenv("POSTGRES_DSN"),
 	}

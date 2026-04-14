@@ -11,11 +11,12 @@ import (
 )
 
 type Handler struct {
-	svc *service.Service
+	svc     *service.Service
+	baseURL string
 }
 
-func New(svc *service.Service) *Handler {
-	return &Handler{svc: svc}
+func New(svc *service.Service, baseURL string) *Handler {
+	return &Handler{svc: svc, baseURL: strings.TrimRight(strings.TrimSpace(baseURL), "/")}
 }
 
 func (h *Handler) Routes() http.Handler {
@@ -57,7 +58,7 @@ func (h *Handler) createShortLink(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, createShortLinkResponse{
 		OriginalURL: link.OriginalURL,
-		ShortURL:    shortURL(c, link.ShortCode),
+		ShortURL:    shortURL(h.baseURL, link.ShortCode),
 		ShortCode:   link.ShortCode,
 	})
 }
@@ -84,10 +85,6 @@ func (h *Handler) respondError(c *gin.Context, err error) {
 	}
 }
 
-func shortURL(c *gin.Context, code string) string {
-	scheme := "http"
-	if c.Request.TLS != nil {
-		scheme = "https"
-	}
-	return scheme + "://" + c.Request.Host + "/" + code
+func shortURL(baseURL, code string) string {
+	return baseURL + "/" + code
 }

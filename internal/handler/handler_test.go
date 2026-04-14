@@ -18,7 +18,7 @@ func TestCreateAndRedirect(t *testing.T) {
 
 	store := memory.New()
 	svc := service.NewWithGenerator(store, func() string { return "code000001" })
-	h := New(svc)
+	h := New(svc, "https://urls.yandex.ru") // в качестве примера
 
 	server := httptest.NewServer(h.Routes())
 	t.Cleanup(server.Close)
@@ -44,6 +44,9 @@ func TestCreateAndRedirect(t *testing.T) {
 	}
 	if created.ShortCode != "code000001" {
 		t.Fatalf("unexpected short code %q", created.ShortCode)
+	}
+	if created.ShortURL != "https://urls.yandex.ru/code000001" {
+		t.Fatalf("unexpected short url %q", created.ShortURL)
 	}
 
 	client := &http.Client{

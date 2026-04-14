@@ -25,7 +25,7 @@ func Run() error {
 	}
 
 	svc := service.New(store)
-	h := handler.New(svc)
+	h := handler.New(svc, cfg.PublicBaseURL)
 
 	server := &http.Server{
 		Addr:    cfg.HTTPAddr,
