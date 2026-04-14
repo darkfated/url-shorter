@@ -154,7 +154,7 @@ func TestCreateShortLinkEmptyURL(t *testing.T) {
 	}
 }
 
-func TestCreateShortLinkTooLongURL(t *testing.T) {
+func TestCreateShortLinkBodyTooLarge(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	store := memory.New()
@@ -164,14 +164,14 @@ func TestCreateShortLinkTooLongURL(t *testing.T) {
 	server := httptest.NewServer(h.Routes())
 	t.Cleanup(server.Close)
 
-	longURL := "https://yandex.ru/" + strings.Repeat("a", 300)
+	longURL := "https://yandex.ru/" + strings.Repeat("a", 500)
 	resp, err := http.Post(server.URL+"/api/shorten", "application/json", strings.NewReader(`{"url":"`+longURL+`"}`))
 	if err != nil {
 		t.Fatalf("POST request failed: %v", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusBadRequest {
+	if resp.StatusCode != http.StatusRequestEntityTooLarge {
 		t.Fatalf("unexpected status: %d", resp.StatusCode)
 	}
 
@@ -181,7 +181,7 @@ func TestCreateShortLinkTooLongURL(t *testing.T) {
 	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
 		t.Fatalf("decode response: %v", err)
 	}
-	if body.Error != "ссылка слишком длинная" {
+	if body.Error != "тело запроса слишком большое" {
 		t.Fatalf("unexpected error message %q", body.Error)
 	}
 }

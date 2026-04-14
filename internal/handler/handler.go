@@ -47,9 +47,18 @@ type errorResponse struct {
 	Error string `json:"error"`
 }
 
+const maxCreateShortLinkBodySize = 300
+
 func (h *Handler) createShortLink(c *gin.Context) {
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxCreateShortLinkBodySize)
+
 	var req createShortLinkRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			h.writeError(c, http.StatusRequestEntityTooLarge, "тело запроса слишком большое")
+			return
+		}
 		h.writeError(c, http.StatusBadRequest, "неверный json")
 		return
 	}
