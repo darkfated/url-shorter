@@ -17,6 +17,13 @@ type Store struct {
 	db *sql.DB
 }
 
+func (s *Store) Close() error {
+	if s == nil || s.db == nil {
+		return nil
+	}
+	return s.db.Close()
+}
+
 func New(dsn string) (*Store, error) {
 	if dsn == "" {
 		return nil, fmt.Errorf("dsn для postgres не настроен")

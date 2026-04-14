@@ -18,6 +18,11 @@ func Run() error {
 	if err != nil {
 		return err
 	}
+	if closer, ok := store.(interface{ Close() error }); ok {
+		defer func() {
+			_ = closer.Close()
+		}()
+	}
 
 	svc := service.New(store)
 	h := handler.New(svc)
