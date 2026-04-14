@@ -16,6 +16,8 @@ import (
 	"github.com/darkfated/url-shorter/internal/storage/postgresql"
 )
 
+const shutdownTimeout = 5 * time.Second
+
 func Run() error {
 	cfg := config.Load()
 	if err := cfg.Validate(); err != nil {
@@ -59,7 +61,10 @@ func Run() error {
 		}
 		return nil
 	case <-ctx.Done():
-		if err := server.Shutdown(context.Background()); err != nil {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+
+		if err := server.Shutdown(shutdownCtx); err != nil {
 			return err
 		}
 	}
