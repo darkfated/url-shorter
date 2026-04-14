@@ -1,6 +1,10 @@
 package config
 
-import "os"
+import (
+	"os"
+
+	"github.com/joho/godotenv"
+)
 
 type StorageType string
 
@@ -16,9 +20,11 @@ type Config struct {
 }
 
 func Load() Config {
+	_ = godotenv.Load()
+
 	cfg := Config{
 		HTTPAddr:      envOrDefault("HTTP_ADDR", ":8080"),
-		StorageType:   StorageType(envOrDefault("STORAGE_TYPE", string(StorageMemory))),
+		StorageType:   StorageType(envOrDefault("STORAGE_TYPE", "memory")),
 		PostgreSQLDSN: os.Getenv("POSTGRES_DSN"),
 	}
 	return cfg

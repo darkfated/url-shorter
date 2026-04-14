@@ -1,0 +1,66 @@
+package handler
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/gin-gonic/gin"
+
+	"url-shorter/internal/service"
+	"url-shorter/internal/storage/memory"
+)
+
+func TestCreateAndResolve(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	store := memory.New()
+	svc := service.NewWithGenerator(store, func() string { return "code000001" })
+	h := New(svc)
+
+	server := httptest.NewServer(h.Routes())
+	t.Cleanup(server.Close)
+
+	body := []byte(`{"url":"https://yandex.ru"}`)
+	resp, err := http.Post(server.URL+"/api/shorten", "application/json", bytes.NewReader(body))
+	if err != nil {
+		t.Fatalf("POST request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	}
+
+	var created struct {
+		OriginalURL string `json:"original_url"`
+		ShortURL    string `json:"short_url"`
+		ShortCode   string `json:"short_code"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&created); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if created.ShortCode != "code000001" {
+		t.Fatalf("unexpected short code %q", created.ShortCode)
+	}
+
+	getResp, err := http.Get(server.URL + "/" + created.ShortCode)
+	if err != nil {
+		t.Fatalf("GET request failed: %v", err)
+	}
+	defer getResp.Body.Close()
+
+	if getResp.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected GET status: %d", getResp.StatusCode)
+	}
+
+	var resolved bytes.Buffer
+	if _, err := resolved.ReadFrom(getResp.Body); err != nil {
+		t.Fatalf("read body: %v", err)
+	}
+	if resolved.String() != "https://yandex.ru" {
+		t.Fatalf("unexpected body %q", resolved.String())
+	}
+}
