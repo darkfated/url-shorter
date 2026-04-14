@@ -21,7 +21,7 @@ func newStubStore() *stubStore {
 	}
 }
 
-func (s *stubStore) CreateLink(ctx context.Context, link domain.Link) error {
+func (s *stubStore) CreateLink(_ context.Context, link domain.Link) error {
 	if s.createFn != nil {
 		if err := s.createFn(link); err != nil {
 			return err
@@ -32,7 +32,7 @@ func (s *stubStore) CreateLink(ctx context.Context, link domain.Link) error {
 	return nil
 }
 
-func (s *stubStore) FindByOriginalURL(ctx context.Context, originalURL string) (domain.Link, error) {
+func (s *stubStore) FindByOriginalURL(_ context.Context, originalURL string) (domain.Link, error) {
 	link, ok := s.byOriginal[originalURL]
 	if !ok {
 		return domain.Link{}, ErrNotFound
@@ -40,7 +40,7 @@ func (s *stubStore) FindByOriginalURL(ctx context.Context, originalURL string) (
 	return link, nil
 }
 
-func (s *stubStore) FindByShortCode(ctx context.Context, shortCode string) (domain.Link, error) {
+func (s *stubStore) FindByShortCode(_ context.Context, shortCode string) (domain.Link, error) {
 	link, ok := s.byShort[shortCode]
 	if !ok {
 		return domain.Link{}, ErrNotFound

@@ -21,7 +21,7 @@ func New() *Store {
 	}
 }
 
-func (s *Store) CreateLink(ctx context.Context, link domain.Link) error {
+func (s *Store) CreateLink(_ context.Context, link domain.Link) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -37,7 +37,7 @@ func (s *Store) CreateLink(ctx context.Context, link domain.Link) error {
 	return nil
 }
 
-func (s *Store) FindByOriginalURL(ctx context.Context, originalURL string) (domain.Link, error) {
+func (s *Store) FindByOriginalURL(_ context.Context, originalURL string) (domain.Link, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -48,7 +48,7 @@ func (s *Store) FindByOriginalURL(ctx context.Context, originalURL string) (doma
 	return link, nil
 }
 
-func (s *Store) FindByShortCode(ctx context.Context, shortCode string) (domain.Link, error) {
+func (s *Store) FindByShortCode(_ context.Context, shortCode string) (domain.Link, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
