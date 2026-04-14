@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"url-shorter/internal/app"
+	"github.com/darkfated/url-shorter/internal/app"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module url-shorter
+module github.com/darkfated/url-shorter
 
 go 1.24.0
 

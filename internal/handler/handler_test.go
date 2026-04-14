@@ -10,8 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"url-shorter/internal/service"
-	"url-shorter/internal/storage/memory"
+	"github.com/darkfated/url-shorter/internal/service"
+	"github.com/darkfated/url-shorter/internal/storage/memory"
 )
 
 func TestCreateAndRedirect(t *testing.T) {

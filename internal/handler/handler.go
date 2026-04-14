@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"url-shorter/internal/service"
+	"github.com/darkfated/url-shorter/internal/service"
 )
 
 type Handler struct {

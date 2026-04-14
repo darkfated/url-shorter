@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 
-	"url-shorter/internal/config"
-	"url-shorter/internal/handler"
-	"url-shorter/internal/service"
-	"url-shorter/internal/storage/memory"
-	"url-shorter/internal/storage/postgresql"
+	"github.com/darkfated/url-shorter/internal/config"
+	"github.com/darkfated/url-shorter/internal/handler"
+	"github.com/darkfated/url-shorter/internal/service"
+	"github.com/darkfated/url-shorter/internal/storage/memory"
+	"github.com/darkfated/url-shorter/internal/storage/postgresql"
 )
 
 func Run() error {

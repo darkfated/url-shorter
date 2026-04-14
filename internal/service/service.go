@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"url-shorter/internal/domain"
+	"github.com/darkfated/url-shorter/internal/domain"
 )
 
 const ShortCodeLength = 10

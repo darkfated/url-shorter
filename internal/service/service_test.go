@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"url-shorter/internal/domain"
+	"github.com/darkfated/url-shorter/internal/domain"
 )
 
 type stubStore struct {

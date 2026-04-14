@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"url-shorter/internal/domain"
-	"url-shorter/internal/service"
+	"github.com/darkfated/url-shorter/internal/domain"
+	"github.com/darkfated/url-shorter/internal/service"
 )
 
 type Store struct {
