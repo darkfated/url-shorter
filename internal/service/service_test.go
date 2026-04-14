@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"url-shorter/internal/domain"
@@ -135,5 +136,15 @@ func TestRejectInvalidURL(t *testing.T) {
 	_, err := svc.Create(context.Background(), "not-a-url")
 	if !errors.Is(err, ErrInvalidURL) {
 		t.Fatalf("expected ErrInvalidURL, got %v", err)
+	}
+}
+
+func TestRejectTooLongURL(t *testing.T) {
+	svc := New(newStubStore())
+
+	longURL := "https://yandex.ru/" + strings.Repeat("a", 300)
+	_, err := svc.Create(context.Background(), longURL)
+	if !errors.Is(err, ErrURLTooLong) {
+		t.Fatalf("expected ErrURLTooLong, got %v", err)
 	}
 }

@@ -82,6 +82,8 @@ func (h *Handler) respondServiceError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, service.ErrInvalidURL):
 		h.writeError(c, http.StatusBadRequest, "ссылка некорректная")
+	case errors.Is(err, service.ErrURLTooLong):
+		h.writeError(c, http.StatusBadRequest, "ссылка слишком длинная")
 	case errors.Is(err, service.ErrNotFound):
 		h.writeError(c, http.StatusNotFound, "не найдено")
 	default:

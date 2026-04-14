@@ -13,12 +13,14 @@ import (
 
 const shortCodeLength = 10
 const shortCodeAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+const maxOriginalURLLength = 260
 
 var (
 	ErrNotFound             = errors.New("ссылка не найдена")
 	ErrDuplicateOriginalURL = errors.New("такая ссылка уже есть")
 	ErrDuplicateShortCode   = errors.New("такая короткая ссылка уже есть")
 	ErrInvalidURL           = errors.New("ссылка некорректная")
+	ErrURLTooLong           = errors.New("ссылка слишком длинная")
 )
 
 type Store interface {
@@ -102,6 +104,10 @@ func (s *Service) Resolve(ctx context.Context, shortCode string) (domain.Link, e
 }
 
 func validateURL(raw string) error {
+	if len(raw) > maxOriginalURLLength {
+		return ErrURLTooLong
+	}
+
 	parsed, err := url.ParseRequestURI(raw)
 	if err != nil {
 		return ErrInvalidURL
